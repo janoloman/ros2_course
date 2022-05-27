@@ -28,9 +28,9 @@ ros2 run demo_nodes_cpp listener
 
 ## Clone the repo
 ```sh
-
+cd
+git clone https://github.com/janoloman/ros2_course
 ```
-
 
 ## Setup
 ```sh
@@ -61,7 +61,18 @@ Add your scripts to the 'setup.py' file inside the 'console_scripts' as follows:
 ``` 
 Then
 ```sh
+# standard build
 colcon build 
+
+# build a specific package
+colcon build --packages-select ros2_app_py
+```
+
+**(pending)**
+If you don't want to build your python pakage every time you modifi your files, then
+```sh
+# build a specific package with symlink
+colcon build --packages-select ros2_app_py --symlink-install
 ```
 
 ## Create a cpp pkg
@@ -69,7 +80,7 @@ colcon build
 ros2 pkg create <pkg_name_cpp> --build-type ament_cmake --dependencies rclcpp std_msgs
 ```
 
-### Install
+### Compile and install
 ```sh
 colcon build 
 ```
