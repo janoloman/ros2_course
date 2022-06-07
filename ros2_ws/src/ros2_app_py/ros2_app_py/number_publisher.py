@@ -6,11 +6,15 @@ from std_msgs.msg import Int64
 class NodePublisherNode(Node):
 	def __init__(self):
 		super().__init__("number_publisher")
-		self.number_ = 4
+		self.declare_parameter("number_to_publish", 2)
+		self.declare_parameter("number_publish_frecuency", 1)
+
+		self.number_ = self.get_parameter("number_to_publish").value
+		self.publish_frecuency_ = self.get_parameter("number_publish_frecuency").value
 
 		self.pub_ = self.create_publisher(Int64, "number", 10)
 
-		self.number_timer_ = self.create_timer(0.5, self.publish_number)
+		self.number_timer_ = self.create_timer(1/self.publish_frecuency_, self.publish_number)
 		self.get_logger().info("Number publisher has been started!")
 
 	def print_number(self):

@@ -85,6 +85,33 @@ ros2 pkg create <pkg_name_cpp> --build-type ament_cmake --dependencies rclcpp st
 colcon build 
 ```
 
+## Run
+
+```sh
+# run a ROS2 node
+ros2 run <pkg_name_cpp> <node_name>
+```
+
+**ros-args**
+```sh
+# rename a node
+ros2 run <pkg_name_cpp> <node_name> --ros-args -r __node:=<another_name>
+
+# rename a topic
+ros2 run <pkg_name_cpp> <node_name> --ros-args -r __node:=<another_node_name> -r <topic_name>:=<another_topic_name>
+
+# rename a service
+ros2 run <pkg_name_cpp> <node_name> --ros-args -r __node:=<another_node_name> -r <service_name>:=<another_service_name>
+```
+
+**ROS2 Parameters**
+```sh
+# run a node and set a parameter
+ros2 run <pkg_name_cpp> <node_name> --ros-args -p <parameter_name>:=<parameter_value>
+```
+
+You need to declare each parameter at the begining of the constructor class. The type and value of the parameter are set at runtime.
+
 
 ## Troubleshooting
 
