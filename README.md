@@ -112,6 +112,30 @@ ros2 run <pkg_name_cpp> <node_name> --ros-args -p <parameter_name>:=<parameter_v
 
 You need to declare each parameter at the begining of the constructor class. The type and value of the parameter are set at runtime.
 
+## Launch files
+Changed from XML (ROS) to python (ROS2). You can create several launch and configuration files for different node into a single bringup package
+```sh
+# create a bringup package
+ros2 pkg create <name>_bringup
+cd <name>_bringup
+
+# remove unused directories
+rm -rf include/ && rm -rf src/
+
+# create launch directory
+mkdir launch
+
+# create node launch files
+touch <node>.launch.py && chmod +x <node>.launch.py
+
+# install
+cd <your_ros2_ws> 
+colcon build --packages-select <name>_bringup
+source ~.bashrc
+
+# run
+ros2 launch <name>_bringup <node>.launch.py
+```
 
 ## Troubleshooting
 
