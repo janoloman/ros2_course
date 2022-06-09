@@ -137,6 +137,58 @@ source ~.bashrc
 ros2 launch <name>_bringup <node>.launch.py
 ```
 
+## ROS to ROS2 migration
+
+### ros1_bridge
+first terminal: start ROS master
+``` sh
+source /opt/ros/noetic/setup.bash
+roscore
+```
+second terminal: start ROS2 ros1_bridge
+``` sh
+source /opt/ros/noetic/setup.bash
+source /opt/ros/foxy/setup.bash
+# now you can run ros1_bridge
+ros2 run ros1_bridge dynamic_bridge --help
+ros2 run ros1_bridge dynamic_bridge --bridge-all-topics
+```
+**test**
+open 2 terminals:
+```sh
+# ROS1 env
+rosrun rospy_tutorials talker
+```
+```sh
+# ROS2 env
+ros2 run demo_nodes_cpp listener
+```
+#### custom msgs
+you have to define the same message file, with the same fields on both workspaces
+
+**setup**
+```sh
+# source ROS1 globally
+source /opt/ros/noetic/setup.bash
+# source ROS2 globally
+source /opt/ros/foxy/setup.bash
+# source ROS1 ws with custom msg
+source <ros1_ws>/devel/setup.bash
+# sourceROS2 ws with custom msg
+source <ros2_ws>/install/setup.bash
+
+
+# bridge
+cd <bridge_ws>
+colcon build --packages-select ros1_bridge --cmake-force-configure
+source install/local_setup.bash
+# check the custom msg pair
+ros2 run ros1_bridge dynamic_bridge --print-pairs
+# run
+ros2 run ros1_bridge dynamic_bridge --bridge-all-topics
+```
+
+
 ## Troubleshooting
 
 - [UserWarning: Usage of dash-separated](https://answers.ros.org/question/386341/ros2-userwarning-usage-of-dash-separated-install-scripts-will-not-be-supported-in-future-versions-please-use-the-underscore-name-install_scripts/)
