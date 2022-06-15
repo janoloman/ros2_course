@@ -86,7 +86,6 @@ colcon build
 ```
 
 ## Run
-
 ```sh
 # run a ROS2 node
 ros2 run <pkg_name_cpp> <node_name>
@@ -109,7 +108,6 @@ ros2 run <pkg_name_cpp> <node_name> --ros-args -r __node:=<another_node_name> -r
 # run a node and set a parameter
 ros2 run <pkg_name_cpp> <node_name> --ros-args -p <parameter_name>:=<parameter_value>
 ```
-
 You need to declare each parameter at the begining of the constructor class. The type and value of the parameter are set at runtime.
 
 ## Launch files
@@ -139,7 +137,8 @@ ros2 launch <name>_bringup <node>.launch.py
 
 ## ROS to ROS2 migration
 
-### ros1_bridge
+### ros1_bridge 
+### Installation process
 first terminal: start ROS master
 ``` sh
 source /opt/ros/noetic/setup.bash
@@ -154,7 +153,7 @@ ros2 run ros1_bridge dynamic_bridge --help
 ros2 run ros1_bridge dynamic_bridge --bridge-all-topics
 ```
 **test**
-open 2 terminals:
+Open 2 more terminals:
 ```sh
 # ROS1 env
 rosrun rospy_tutorials talker
@@ -163,10 +162,9 @@ rosrun rospy_tutorials talker
 # ROS2 env
 ros2 run demo_nodes_cpp listener
 ```
-#### custom msgs
-you have to define the same message file, with the same fields on both workspaces
-
-**setup**
+##### custom msgs
+You need to **define the same message file, with the same fields on both workspaces (ROS1 and ROS2)**. 
+Open a new terminal:
 ```sh
 # source ROS1 globally
 source /opt/ros/noetic/setup.bash
@@ -174,19 +172,37 @@ source /opt/ros/noetic/setup.bash
 source /opt/ros/foxy/setup.bash
 # source ROS1 ws with custom msg
 source <ros1_ws>/devel/setup.bash
-# sourceROS2 ws with custom msg
+# source ROS2 ws with custom msg
 source <ros2_ws>/install/setup.bash
 
 
 # bridge
 cd <bridge_ws>
 colcon build --packages-select ros1_bridge --cmake-force-configure
+# source local ROS2 with ros1_bridge and cutstom msgs
 source install/local_setup.bash
 # check the custom msg pair
 ros2 run ros1_bridge dynamic_bridge --print-pairs
+```
+
+### Run you app with ROS1 and ROS2
+
+Open a new terminal
+```sh
+# source ROS1 globally
+source /opt/ros/noetic/setup.bash
+# source ROS2 globally
+source /opt/ros/foxy/setup.bash
+# source local ROS2 with ros1_bridge and cutstom msgs
+source <bridge_ws>/install/local_setup.bash
+
 # run
 ros2 run ros1_bridge dynamic_bridge --bridge-all-topics
 ```
+
+now you can run separadetly your ROS1 and ROS2 programs
+
+
 
 
 ## Troubleshooting
