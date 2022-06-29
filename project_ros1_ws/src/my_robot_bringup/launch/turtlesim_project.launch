@@ -1,0 +1,23 @@
+<launch>
+
+    <node name="turtlesim" pkg="turtlesim" type="turtlesim_node" output="screen" />
+
+    <!-- Python nodes-->
+
+    <node name="turtle_controller" pkg="turtlesim_project_py" type="turtle_controller.py" output="screen" />
+    <!-- 
+    <node name="target_generator" pkg="turtlesim_project_py" type="target_publisher.py" output="screen">
+        <param name="publish_interval" type="double" value="2.0" />
+    </node> 
+    -->
+
+    <!-- Cpp nodes -->
+    
+    <!-- 
+    <node name="turtle_controller" pkg="turtlesim_project_cpp" type="turtle_controller" output="screen" /> 
+    -->
+    <node name="target_generator" pkg="turtlesim_project_cpp" type="target_publisher" output="screen">
+        <param name="publish_interval" type="double" value="2.0" />
+    </node>
+    
+</launch>

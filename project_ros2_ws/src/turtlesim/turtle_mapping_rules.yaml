@@ -1,0 +1,5 @@
+-
+  ros1_package_name: 'turtlesim'
+  ros1_message_name: 'Pose'
+  ros2_package_name: 'turtlesim'
+  ros2_message_name: 'Pose'

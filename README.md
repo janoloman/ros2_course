@@ -1,6 +1,35 @@
-# ROS2
+# ROS2 course
 
-## Prerequisites
+### Summary
+ROS1 to ROS2 transition course tips and examples to migrate projects.
+
+## Table of Contents
+ - [Overview](#overview)
+ - [Setup](#setup)
+ - [Ros2](#install-rovtwin)
+    - [Create & install pkgs](#create-&-install-pkgs)
+    - [Compile and install](#compila-and-install)
+    - [Run](#run)
+      - [ros-args](#ros-args)
+      - [Launch files (ROS2 bringup)](#launch-files-ros2-bringup)
+    - [ros1_bridge](#ros1_bridge)
+      - [Simple case](#simple-case-run-your-app-with-ros1-and-ros2)
+      - [Run with custom msgs and services](#run-with-custom-msgs-and-services)
+        - [Compile and install your ROS1 and ROS2 packages](#compile-and-install-your-ros1-and-ros2-packages)
+        - [Install ros1_bridge and run](#install-ros1_bridge-and-run)
+- [ROS1 to ROS2 migration](#ros1-to-ros2-migration)
+- [Troubleshooting](#troubleshooting)
+----
+
+
+## Setup
+### Clone the repo
+```sh
+cd
+git clone https://github.com/janoloman/ros2_course
+```
+
+### Prerequisites
 Install ROS2, based on [ROS2 Foxy install Ubuntu Debian](https://docs.ros.org/en/foxy/Installation/Ubuntu-Install-Debians.html)
 ```sh
 # setup sources
@@ -25,14 +54,7 @@ ros2 run demo_nodes_cpp talker
 source /opt/ros/foxy/setup.bash
 ros2 run demo_nodes_cpp listener
 ```
-
-## Clone the repo
-```sh
-cd
-git clone https://github.com/janoloman/ros2_course
-```
-
-## Setup
+**(Optional) setup environment**
 ```sh
 # Environment setup
 echo "# ROS2 foxy" >> ~/.bashrc
@@ -42,12 +64,17 @@ echo "source /usr/share/colcon_argcomplete/hook/colcon-argcomplete.bash" >> ~/.b
 source ~/.bashrc
 ```
 
-## Create a python pkg
+
+## ROS2
+### Create & install pkgs
+**Python**
 ```sh
+cd <ros2_ws>
+
+# Create a Python pkg
 ros2 pkg create <pkg_name_py> --build-type ament_python --dependencies rclpy std_msgs ...
 ```
-### Install
-**Setup**
+Setup
 Add your scripts to the 'setup.py' file inside the 'console_scripts' as follows:
 ``` python
 'console_scripts': [
@@ -59,8 +86,16 @@ Add your scripts to the 'setup.py' file inside the 'console_scripts' as follows:
             "number_publisher = ros2_app_py.number_publisher:main"
         ],
 ``` 
-Then
+**C++**
 ```sh
+# Create a C++ pkg
+ros2 pkg create <pkg_name_cpp> --build-type ament_cmake --dependencies rclcpp std_msgs
+```
+
+### Compile and install
+```sh
+cd <ros2_ws>
+
 # standard build
 colcon build 
 
@@ -68,30 +103,29 @@ colcon build
 colcon build --packages-select ros2_app_py
 ```
 
-**(pending)**
-If you don't want to build your python pakage every time you modifi your files, then
+*Python only* (pending): 
+If you don't want to build your python pakage every time you modify your files, then
 ```sh
 # build a specific package with symlink
 colcon build --packages-select ros2_app_py --symlink-install
 ```
 
-## Create a cpp pkg
+**Install** 
 ```sh
-ros2 pkg create <pkg_name_cpp> --build-type ament_cmake --dependencies rclcpp std_msgs
+# add WS to sourced ROS distro
+setup install/setup.bash
+
+# setup only local WS
+setup install/local_setup.bash 
 ```
 
-### Compile and install
-```sh
-colcon build 
-```
-
-## Run
+### Run
 ```sh
 # run a ROS2 node
-ros2 run <pkg_name_cpp> <node_name>
+ros2 run <pkg_name> <node_name>
 ```
-
-**ros-args**
+#### ros-args
+For renaming nodes, topics, services etc.
 ```sh
 # rename a node
 ros2 run <pkg_name_cpp> <node_name> --ros-args -r __node:=<another_name>
@@ -110,9 +144,11 @@ ros2 run <pkg_name_cpp> <node_name> --ros-args -p <parameter_name>:=<parameter_v
 ```
 You need to declare each parameter at the begining of the constructor class. The type and value of the parameter are set at runtime.
 
-## Launch files
+#### Launch files (ROS2 bringup)
 Changed from XML (ROS) to python (ROS2). You can create several launch and configuration files for different node into a single bringup package
 ```sh
+cd <ros2_ws>
+
 # create a bringup package
 ros2 pkg create <name>_bringup
 cd <name>_bringup
@@ -135,19 +171,15 @@ source ~.bashrc
 ros2 launch <name>_bringup <node>.launch.py
 ```
 
-## ROS to ROS2 migration
-
 ### ros1_bridge 
-**Run you app with ROS1 and ROS2**
-first terminal: start ROS master
+#### Simple case
+Run your app with ROS1 and ROS2. First terminal: start ROS master
 ``` sh
-source /opt/ros/noetic/setup.bash
-roscore
+source /opt/ros/noetic/setup.bash && roscore
 ```
 second terminal: start ROS2 ros1_bridge
 ``` sh
-source /opt/ros/noetic/setup.bash
-source /opt/ros/foxy/setup.bash
+source /opt/ros/noetic/setup.bash && source /opt/ros/foxy/setup.bash
 # now you can run ros1_bridge
 ros2 run ros1_bridge dynamic_bridge --help
 ros2 run ros1_bridge dynamic_bridge --bridge-all-topics
@@ -156,17 +188,65 @@ ros2 run ros1_bridge dynamic_bridge --bridge-all-topics
 Open 2 more terminals:
 ```sh
 # ROS1 env
+source /opt/ros/noetic/setup.bash
 rosrun rospy_tutorials talker
 ```
 ```sh
 # ROS2 env
+source /opt/ros/foxy/setup.bash
 ros2 run demo_nodes_cpp listener
 ```
-### ros1_bridge with custom msgs
-#### With the same message on both workspaces
-You need to define the same message file, with the same fields on both workspaces (ROS1 and ROS2). 
+#### Run with custom msgs and services
+**(Optional) With different or custom messages and services between workspaces**
+You need to **define mapping rules between workspaces (ROS1 and ROS2)**.
 
-**Setup**
+**messages**
+Create a YAML file at your ROS2 package-message or package-service directory
+```sh
+cd <ros2_ws>/src/<your_ros2_pkg>/<your_msgs_srvs>
+touch my_mapping_rules.yaml
+```
+Add your mapping rules
+```yaml
+-
+# messages mapping
+  ros1_package_name: 'my_msgs'
+  ros1_message_name: 'CustomString'
+
+  ros2_package_name: 'my_msgs'
+  ros2_message_name: 'MyCustomString'
+
+# services mapping
+  ros1_package_name: 'my_msgs'
+  ros2_package_name: 'my_interfaces'
+
+```
+
+Add your mapping rules to `package.xml`
+```xml
+...
+<export>
+    <build_type>ament_cmake</build_type>
+    <ros1_bridge mapping_rules="my_mapping_rules.yaml" />
+</export>
+...
+```
+
+Add your mapping rules file to `CMakeLists.txt` as an aditional *install file* after the 'rosidl_generate_interfaces' section 
+```cmake
+...
+rosidl_generate_interfaces(${PROJECT_NAME}
+  "msg/MyCustomStrinng.msg"
+  "srv/ReseyCounter.srv"
+)
+
+install(FILES
+  my_mapping_rules.yaml
+  DESTINATION share/${PROJECT_NAME}/
+)
+...
+```
+##### Compile and install your ROS1 and ROS2 packages
 Open a new terminal, then compile and install your ROS1 package
 ```sh
 # source ROS1 globally
@@ -185,6 +265,7 @@ source /opt/ros/foxy/setup.bash
 cd <ros2_ws>
 colcon build
 ```
+##### Install ros1_bridge and run
 Open a third terminal, then install ros1_bridge
 ```sh
 # source ROS1 globally
@@ -196,83 +277,6 @@ source <ros1_ws>/devel/setup.bash
 # source ROS2 ws with custom msg
 source <ros2_ws>/install/setup.bash
 
-
-# bridge
-cd <bridge_ws>
-colcon build --packages-select ros1_bridge --cmake-force-configure
-# source local ROS2 with ros1_bridge and cutstom msgs
-source install/local_setup.bash
-# check the custom msg pair
-ros2 run ros1_bridge dynamic_bridge --print-pairs
-```
-
-**Run**
-```sh
-# source ROS1 globally
-source /opt/ros/noetic/setup.bash
-# source ROS2 globally
-source /opt/ros/foxy/setup.bash
-# source local ROS2 with ros1_bridge and cutstom msgs
-source <bridge_ws>/install/local_setup.bash
-
-# run
-ros2 run ros1_bridge dynamic_bridge --bridge-all-topics
-```
-Now you can run separadetly your ROS1 and ROS2 programs
-
-#### With different message between workspaces
-You need to **define mapping rules between workspaces (ROS1 and ROS2)**.
-
-First create a YAML file at your ROS2 package-message directory
-```sh
-cd <ros2_ws>/src/<your_ros2_pkg>/<your_msgs>
-touch my_mapping_rules.yaml
-```
-Add your mapping rules
-```yaml
--
-  ros1_package_name: 'my_msgs'
-  ros1_message_name: 'CustomString'
-
-  ros2_package_name: 'my_msgs'
-  ros2_message_name: 'MyCustomString'
-
-```
-
-Add your mapping rules to `package.xml`
-```xml
-...
-<export>
-    <build_type>ament_cmake</build_type>
-    <ros1_bridge mapping_rules="my_mapping_rules.yaml" />
-</export>
-...
-```
-
-Add your mapping rules file to `CMakeLists.txt` as an aditional *install file* after the 'rosidl_generate_interfaces' section 
-```cmake
-...
-rosidl_generate_interfaces(${PROJECT_NAME}
-  "msg/MyCustomString.msg"
-)
-
-install(FILES
-  my_mapping_rules.yaml
-  DESTINATION share/${PROJECT_NAME}/
-)
-...
-```
-Compile and install your ROS1 and ROS2 packages. Then install ros1_bridge and run
-```sh
-# source ROS1 globally
-source /opt/ros/noetic/setup.bash
-# source ROS2 globally
-source /opt/ros/foxy/setup.bash
-# source ROS1 ws with custom msg
-source <ros1_ws>/devel/setup.bash
-# source ROS2 ws with custom msg
-source <ros2_ws>/install/setup.bash
-
 # bridge
 cd <bridge_ws>
 colcon build --packages-select ros1_bridge --cmake-force-configure
@@ -287,6 +291,21 @@ ros2 run ros1_bridge dynamic_bridge --bridge-all-topics
 Now you can run separadetly your ROS1 and ROS2 programs
 
 
+## ROS to ROS2 migration
+  0) Migrate codebase to ROS1 Noetic
+
+  1) Setup ros1_bridge for the custom interfaces
+    - Migrate your Python code to Python3, setting the first line of each script:
+```python
+#!/usr/bin/env python3
+```
+    - Setup ros1_bridge
+
+  2) Migrate the nodes
+  
+  3) Write a launch file for the ROS2 app
+
+  Based on [ROS noetic migration guide](https://wiki.ros.org/noetic/Migration)
 
 
 ## Troubleshooting

@@ -15,13 +15,12 @@ find_package(ament_cmake REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
-  "srv/ResetCounter.srv"
   # "srv/YourService.srv"
-  # "msg/YourMessage.msg"
+  "msg/Coordinates2D.msg"
 )
 
 install(FILES
-  my_mapping_rules.yaml
+  mapping_rules.yaml
   DESTINATION share/${PROJECT_NAME}/
 )
 
