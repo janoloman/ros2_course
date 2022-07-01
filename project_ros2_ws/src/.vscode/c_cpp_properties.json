@@ -5,7 +5,7 @@
             "includePath": [
                 "${workspaceFolder}/**",
                 "/opt/ros/foxy/include",
-                "~/ros2_ws/install/my_robot_interfaces/include"
+                "~/ros2_course/project_ros2_ws/install/my_robot_interfaces/include"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/gcc",

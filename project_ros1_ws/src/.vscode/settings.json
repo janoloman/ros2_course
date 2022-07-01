@@ -1,10 +1,10 @@
 {
     "python.autoComplete.extraPaths": [
-        "~/project_ros1_ws/devel/lib/python3/dist-packages",
+        "~/ros2_course/project_ros1_ws/devel/lib/python3/dist-packages",
         "/opt/ros/noetic/lib/python3/dist-packages"
     ],
     "python.analysis.extraPaths": [
-        "~/project_ros1_ws/devel/lib/python3/dist-packages",
+        "~/ros2_course/project_ros1_ws/devel/lib/python3/dist-packages",
         "/opt/ros/noetic/lib/python3/dist-packages"
     ]
 }
