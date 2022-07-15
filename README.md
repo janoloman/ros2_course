@@ -150,6 +150,10 @@ ROS1 to ROS2 transition course tips and examples to migrate projects.
   ```
   You need to declare each parameter at the begining of the constructor class. The type and value of the parameter are set at runtime.
 
+  | ROS1 parameters | ROS2 parameters |
+  |-------------------|-----------------|
+  | <img height="280" src="img/ros_parameters.png"> | <img height="280" src="img/ros2_parameters.png"> |
+  
   #### Launch files (ROS2 bringup)
   Changed from XML (ROS) to python (ROS2). You can create several launch and configuration files for different node into a single bringup package
   ```sh
@@ -300,83 +304,130 @@ ROS1 to ROS2 transition course tips and examples to migrate projects.
 
 
 ## ROS1 to ROS2 migration
-  Based on [ROS noetic migration guide](https://wiki.ros.org/noetic/Migration)
+Based on [ROS noetic migration guide](https://wiki.ros.org/noetic/Migration)
 
-  0) Migrate codebase to ROS1 Noetic
 
-  1) Setup ros1_bridge for the custom interfaces
+<table>
+<tr>
+<td><img width="400" src="img/ros2_migration1.png"></td> 
+<td>
+
+  1) Migrate codebase to ROS1 Noetic
+
+</td>
+</tr>
+<tr>
+<td><img width="400" src="img/ros2_migration2.png"></td>
+<td>
+
+  2) Setup ros1_bridge for the custom interfaces
     - Migrate your Python code to Python3, setting the first line of each script:
-      ```python
-      #!/usr/bin/env python3
-      ```
+    ```python
+    #!/usr/bin/env python3
+    ``` 
     - Test your python3 code
-
     - Setup ros1_bridge and test
 
-  2) Migrate the nodes
+</td>
+</tr>
+<tr>
+  <td><img width="400" src="img/ros2_migration3.png"></td>
+  <td>
+
+  3) Migrate the nodes:
     - Check ROS1 node dependencies (package.xml): messages and packages
 
     - [Create ROS2 package](#create-pkgs)
 
     - Check the new ROS2 package dependencies (package.xml)
 
-      Example: 
-        A ROS1 python pkg, package.xml:
-          ```xml
-          ...
-            <build_depend>my_robot_msgs</build_depend>
-          ...
-            <build_export_depend>my_robot_msgs</build_export_depend>
-          ...
-            <exec_depend>my_robot_msgs</exec_depend>
-          ...
-            <depend>turtlesim</depend>
-            <depend>geometry_msgs</depend>
-          ...
-          ```
-        To create the ROS2 pkg should be:
-          ```sh
-          cd <ros2_ws>
-          ros2 pkg create <ros2_package_name> --build-type ament_python --dependencies rclpy my_robot_interfaces turtlesim geometry_msgs
-          ```
-        with `my_robot_interfaces` instead `my_robot_msgs`
-        Then, the new pkg should have the same dependencies
-          ```xml
-          ...
-          <depend>rclpy</depend>
-          <depend>my_robot_interfaces</depend>
+      Example: A ROS1 python pkg, package.xml:
+          
+        ```xml
+        ...
+          <build_depend>my_robot_msgs</build_depend>
+          <build_export_depend>my_robot_msgs</build_export_depend>
+          <exec_depend>my_robot_msgs</exec_depend>
+        ...
           <depend>turtlesim</depend>
           <depend>geometry_msgs</depend>
-          ...
-          ```
-
+        ...
+        ```
+      
+      To create the ROS2 pkg should be:
+      
+        ```sh
+        cd <ros2_ws>
+        ros2 pkg create <ros2_package_name> --build-type ament_python --dependencies rclpy my_robot_interfaces turtlesim geometry_msgs
+        ```
+      with `my_robot_interfaces` instead `my_robot_msgs`. Then, the new pkg should have the same dependencies
+      
+        ```xml
+        ...
+        <depend>rclpy</depend>
+        <depend>my_robot_interfaces</depend>
+        <depend>turtlesim</depend>
+        <depend>geometry_msgs</depend>
+        ...
+        ```
     - Create the ROS2 node programs (use the [node_oop_template.cpp](node_oop_template.cpp) and [node_oop_template.py](node_oop_template.py) templates)
 
     - Migrate your code
 
     - Test the new ROS2 node
 
-  
-  3) Write a launch file for the new ROS2 app
+  4) Write a launch file for the new ROS2 app
+    - [Create a launch file](#launch-files-ros2-bringup)
+    
+    - Setup `CMakeLists.txt`
+      ```make
+      ...
+      find_package(ament_cmake REQUIRED)
+      
+      # Add after 
+      install(DIRECTORY
+       launch
+       DESTINATION share/${PROJECT_NAME}/
+      )
+      ...
+      ```
 
+    - Add the bringup package dependencies on your `package.xml` file, for example:
+      ```xml
+      ...          
+      <exec_depend>turtlesim</exec_depend>
+      <exec_depend>turtlesim_project_py</exec_depend>
+      ...
+      ```
+
+</td></tr>
+<tr>
+<td><img width="400" src="img/ros2_migration4.png"></td>
+<td>
+  
+  5) Test all you new ROS2 nodes without ros1_bridge
+
+</td>
+</tr>
+</table>
 
 
 ## Troubleshooting
-  - [UserWarning: Usage of dash-separated](https://answers.ros.org/question/386341/ros2-userwarning-usage-of-dash-separated-install-scripts-will-not-be-supported-in-future-versions-please-use-the-underscore-name-install_scripts/)
+- [UserWarning: Usage of dash-separated](https://answers.ros.org/question/386341/ros2-userwarning-usage-of-dash-separated-install-scripts-will-not-be-supported-in-future-versions-please-use-the-underscore-name-install_scripts/)
 
-  - [SetuptoolsDeprecationWarning: setup.py install is deprecated](https://answers.ros.org/question/396439/setuptoolsdeprecationwarning-setuppy-install-is-deprecated-use-build-and-pip-and-other-standards-based-tools/)
+- [SetuptoolsDeprecationWarning: setup.py install is deprecated](https://answers.ros.org/question/396439/setuptoolsdeprecationwarning-setuppy-install-is-deprecated-use-build-and-pip-and-other-standards-based-tools/)
   
 ### Visual Studio code editor
-  Download the editor from https://code.visualstudio.com/download, then instal the Extensions:
-    - Python by Microsoft (ms-python.python)
-    - C/C++ by Microsoft (ms-vscode.cpptools)
-    - CMake by twxs (twxs.cmake)
+Download the editor from https://code.visualstudio.com/download, then instal the Extensions:
+  - Python by Microsoft (ms-python.python)
+  - C/C++ by Microsoft (ms-vscode.cpptools)
+  - CMake by twxs (twxs.cmake)
 
-  To use autocompletion for ROS, before open the editor you must source ROS
-  ```sh
-  source /opt/ros/foxy/setup.bash
-  source ~/ros2_course/project_ros2_ws/install/setup.bash
+To use autocompletion for ROS, before open the editor you must source ROS
+```sh
+source /opt/ros/foxy/setup.bash
+source ~/ros2_course/project_ros2_ws/install/setup.bash
 
-  cd ros2_course/project_ros2_ws/src
-  code .
-  ```
+cd ros2_course/project_ros2_ws/src
+code .
+```

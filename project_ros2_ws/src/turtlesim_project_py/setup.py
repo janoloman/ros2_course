@@ -21,7 +21,7 @@ setup(
     entry_points={
         'console_scripts': [
             "target_publisher = turtlesim_project_py.target_publisher:main",
-            "target_controller = turtlesim_project_py.turtle_controller:main"
+            "turtle_controller = turtlesim_project_py.turtle_controller:main"
         ],
     },
 )

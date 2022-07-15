@@ -2,4 +2,7 @@ build
 devel
 install
 log
+resource
+test
 .catkin_workspace
+.vscode
