@@ -213,8 +213,10 @@ ROS1 to ROS2 transition course tips and examples to migrate projects.
 
   Create a YAML file at your ROS2 package-message or package-service directory
   ```sh
-  cd <ros2_ws>/src/<your_ros2_pkg>/<your_msgs_srvs>
-  touch my_mapping_rules.yaml
+  source /opt/ros/foxy/setup.bash
+  ros2 pkg create <your_ros2_pkg>_interfaces
+  cd <ros2_ws>/src/<your_ros2_pkg>_interfaces/<your_msgs_srvs>
+  touch mapping_rules.yaml
   ```
   Add your mapping rules
   ```yaml
@@ -231,25 +233,31 @@ ROS1 to ROS2 transition course tips and examples to migrate projects.
     ros2_package_name: 'my_interfaces'
 
   ```
-  Add your mapping rules to `<your_ros2_pkg>/package.xml`
+  Add your mapping rules to `<your_ros2_pkg>_interfaces/package.xml`
   ```xml
+  ...
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <build_depend>rosidl_default_generators</build_depend>
+  <exec_depend>rosidl_default_runtime</exec_depend>
+  <member_of_group>rosidl_interface_packages</member_of_group>
   ...
   <export>
       <build_type>ament_cmake</build_type>
-      <ros1_bridge mapping_rules="my_mapping_rules.yaml" />
+      <ros1_bridge mapping_rules="mapping_rules.yaml" />
   </export>
   ...
   ```
-  Add your mapping rules file to `<your_ros2_pkg>/CMakeLists.txt` as an aditional *install file* after the 'rosidl_generate_interfaces' section 
+  Add your mapping rules file to `<your_ros2_pkg>_interfaces/CMakeLists.txt` as an aditional *install file* after the 'rosidl_generate_interfaces' section 
   ```cmake
   ...
+  find_package(rosidl_default_generators REQUIRED)
   rosidl_generate_interfaces(${PROJECT_NAME}
     "msg/MyCustomStrinng.msg"
     "srv/ReseyCounter.srv"
   )
 
   install(FILES
-    my_mapping_rules.yaml
+    mapping_rules.yaml
     DESTINATION share/${PROJECT_NAME}/
   )
   ...
