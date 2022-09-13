@@ -181,9 +181,9 @@ ROS1 to ROS2 transition course tips and examples to migrate projects.
   ros2 launch <name>_bringup <node>.launch.py
   ```
 
-  ### ros1_bridge 
+## ros1_bridge 
 
-  #### Simple case, default bridge
+  ### Simple case, default bridge
   Run your app with ROS1 and ROS2. First terminal: start ROS master
   ``` sh
   source /opt/ros/noetic/setup.bash && roscore
@@ -208,7 +208,7 @@ ROS1 to ROS2 transition course tips and examples to migrate projects.
   ros2 run demo_nodes_cpp listener
   ```
 
-  #### Bridge with custom msgs and services
+  ### Bridge with custom msgs and services
   You need to **define mapping rules between workspaces (ROS1 and ROS2)**, the rules can be setted to map messages and services.
 
   Create a YAML file at your ROS2 package-message or package-service directory
@@ -253,7 +253,7 @@ ROS1 to ROS2 transition course tips and examples to migrate projects.
   find_package(rosidl_default_generators REQUIRED)
   rosidl_generate_interfaces(${PROJECT_NAME}
     "msg/MyCustomStrinng.msg"
-    "srv/ReseyCounter.srv"
+    "srv/ResetCounter.srv"
   )
 
   install(FILES
@@ -263,7 +263,7 @@ ROS1 to ROS2 transition course tips and examples to migrate projects.
   ...
   ```
 
-  ##### Setup ROS1 and ROS2 packages
+  #### Setup ROS1 and ROS2 packages
   Open a new terminal, then compile and install your ROS1 package
   ```sh
   # source ROS1 globally
@@ -283,7 +283,17 @@ ROS1 to ROS2 transition course tips and examples to migrate projects.
   colcon build
   ```
 
-  ##### Setup ros1_bridge and run
+  #### Setup ros1_bridge and run
+  Create a bridge workspace
+  ```sh
+  mkdir bridge_ws
+  cd bridge_ws
+  mkdir src && cd src
+
+  # clone rosbridge package
+  git clone https://github.com/ros2/ros1_bridge.git
+  ```
+
   Open a new terminal and compile ros1_bridge. The compilation can take several minutes, depending on your PC performance
   ```sh
   # source ROS1 globally
@@ -312,112 +322,111 @@ ROS1 to ROS2 transition course tips and examples to migrate projects.
 
 
 ## ROS1 to ROS2 migration
-Based on [ROS noetic migration guide](https://wiki.ros.org/noetic/Migration)
+  Based on [ROS noetic migration guide](https://wiki.ros.org/noetic/Migration)
 
-
-<table>
-<tr>
-<td><img width="400" src="img/ros2_migration1.png"></td> 
-<td>
-
-  1) Migrate codebase to ROS1 Noetic
-
-</td>
-</tr>
-<tr>
-<td><img width="400" src="img/ros2_migration2.png"></td>
-<td>
-
-  2) Setup ros1_bridge for the custom interfaces
-    - Migrate your Python code to Python3, setting the first line of each script:
-    ```python
-    #!/usr/bin/env python3
-    ``` 
-    - Test your python3 code
-    - Setup ros1_bridge and test
-
-</td>
-</tr>
-<tr>
-  <td><img width="400" src="img/ros2_migration3.png"></td>
+  <table>
+  <tr>
+  <td><img width="400" src="img/ros2_migration1.png"></td> 
   <td>
 
-  3) Migrate the nodes:
-    - Check ROS1 node dependencies (package.xml): messages and packages
+    1) Migrate codebase to ROS1 Noetic
 
-    - [Create ROS2 package](#create-pkgs)
+  </td>
+  </tr>
+  <tr>
+  <td><img width="400" src="img/ros2_migration2.png"></td>
+  <td>
 
-    - Check the new ROS2 package dependencies (package.xml)
+    2) Setup ros1_bridge for the custom interfaces
+      - Migrate your Python code to Python3, setting the first line of each script:
+      ```python
+      #!/usr/bin/env python3
+      ``` 
+      - Test your python3 code
+      - Setup ros1_bridge and test
 
-      Example: A ROS1 python pkg, package.xml:
-          
-        ```xml
-        ...
-          <build_depend>my_robot_msgs</build_depend>
-          <build_export_depend>my_robot_msgs</build_export_depend>
-          <exec_depend>my_robot_msgs</exec_depend>
-        ...
+  </td>
+  </tr>
+  <tr>
+    <td><img width="400" src="img/ros2_migration3.png"></td>
+    <td>
+
+    3) Migrate the nodes:
+      - Check ROS1 node dependencies (package.xml): messages and packages
+
+      - [Create ROS2 package](#create-pkgs)
+
+      - Check the new ROS2 package dependencies (package.xml)
+
+        Example: A ROS1 python pkg, package.xml:
+            
+          ```xml
+          ...
+            <build_depend>my_robot_msgs</build_depend>
+            <build_export_depend>my_robot_msgs</build_export_depend>
+            <exec_depend>my_robot_msgs</exec_depend>
+          ...
+            <depend>turtlesim</depend>
+            <depend>geometry_msgs</depend>
+          ...
+          ```
+        
+        To create the ROS2 pkg should be:
+        
+          ```sh
+          cd <ros2_ws>
+          ros2 pkg create <ros2_package_name> --build-type ament_python --dependencies rclpy my_robot_interfaces turtlesim geometry_msgs
+          ```
+        with `my_robot_interfaces` instead `my_robot_msgs`. Then, the new pkg should have the same dependencies
+        
+          ```xml
+          ...
+          <depend>rclpy</depend>
+          <depend>my_robot_interfaces</depend>
           <depend>turtlesim</depend>
           <depend>geometry_msgs</depend>
+          ...
+          ```
+      - Create the ROS2 node programs (use the [node_oop_template.cpp](node_oop_template.cpp) and [node_oop_template.py](node_oop_template.py) templates)
+
+      - Migrate your code
+
+      - Test the new ROS2 node
+
+    4) Write a launch file for the new ROS2 app
+      - [Create a launch file](#launch-files-ros2-bringup)
+      
+      - Setup `CMakeLists.txt`
+        ```make
+        ...
+        find_package(ament_cmake REQUIRED)
+        
+        # Add after 
+        install(DIRECTORY
+         launch
+         DESTINATION share/${PROJECT_NAME}/
+        )
         ...
         ```
-      
-      To create the ROS2 pkg should be:
-      
-        ```sh
-        cd <ros2_ws>
-        ros2 pkg create <ros2_package_name> --build-type ament_python --dependencies rclpy my_robot_interfaces turtlesim geometry_msgs
-        ```
-      with `my_robot_interfaces` instead `my_robot_msgs`. Then, the new pkg should have the same dependencies
-      
+
+      - Add the bringup package dependencies on your `package.xml` file, for example:
         ```xml
-        ...
-        <depend>rclpy</depend>
-        <depend>my_robot_interfaces</depend>
-        <depend>turtlesim</depend>
-        <depend>geometry_msgs</depend>
+        ...          
+        <exec_depend>turtlesim</exec_depend>
+        <exec_depend>turtlesim_project_py</exec_depend>
         ...
         ```
-    - Create the ROS2 node programs (use the [node_oop_template.cpp](node_oop_template.cpp) and [node_oop_template.py](node_oop_template.py) templates)
 
-    - Migrate your code
-
-    - Test the new ROS2 node
-
-  4) Write a launch file for the new ROS2 app
-    - [Create a launch file](#launch-files-ros2-bringup)
+  </td></tr>
+  <tr>
+  <td><img width="400" src="img/ros2_migration4.png"></td>
+  <td>
     
-    - Setup `CMakeLists.txt`
-      ```make
-      ...
-      find_package(ament_cmake REQUIRED)
-      
-      # Add after 
-      install(DIRECTORY
-       launch
-       DESTINATION share/${PROJECT_NAME}/
-      )
-      ...
-      ```
+    5) Test all you new ROS2 nodes without ros1_bridge
 
-    - Add the bringup package dependencies on your `package.xml` file, for example:
-      ```xml
-      ...          
-      <exec_depend>turtlesim</exec_depend>
-      <exec_depend>turtlesim_project_py</exec_depend>
-      ...
-      ```
-
-</td></tr>
-<tr>
-<td><img width="400" src="img/ros2_migration4.png"></td>
-<td>
-  
-  5) Test all you new ROS2 nodes without ros1_bridge
-
-</td>
-</tr>
-</table>
+  </td>
+  </tr>
+  </table>
 
 
 ## Troubleshooting
